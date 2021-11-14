@@ -1,31 +1,13 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
-use juniper::{
-    graphql_object, EmptyMutation, EmptySubscription, GraphQLEnum, GraphQLObject, RootNode,
-};
+use juniper::{EmptyMutation, EmptySubscription, RootNode};
 use serde::Serialize;
+use tokio::sync::RwLock;
 use warp::{hyper::StatusCode, Filter};
 
-#[derive(GraphQLEnum)]
-enum Episode {
-    NewHope,
-    Empire,
-    Jedi,
-}
+struct Context(Arc<RwLock<HashMap<String, String>>>);
 
-#[derive(GraphQLObject)]
-#[graphql(description = "A humanoid creature in the Star Wars universe")]
-struct Human {
-    id: String,
-    name: String,
-    appears_in: Vec<Episode>,
-    home_planet: String,
-}
-
-struct Context {
-    // Use your real database pool here.
-    pool: HashMap<String, String>,
-}
+impl juniper::Context for Context {}
 
 struct Query;
 
@@ -37,10 +19,18 @@ impl Query {
         "1.0"
     }
 
-    // Arguments to resolvers can either be simple types or input objects.
-    // The executor is a special (optional) argument that allows accessing the context.
-    fn human(&self, name: String) -> String {
-        name
+    async fn get_message(context: &Context, name: String) -> Option<String> {
+        let Context(context) = context;
+        match context.read().await.get(&name) {
+            Some(message) => Some(message.clone()),
+            None => None,
+        }
+    }
+
+    async fn set_message(context: &Context, name: String, message: String) -> String {
+        let Context(context) = context;
+        context.write().await.insert(name, message.clone());
+        message
     }
 }
 
@@ -59,8 +49,6 @@ struct StatusResponse {
     status: String,
 }
 
-impl juniper::Context for Context {}
-
 #[derive(Serialize)]
 struct ErrorMessage<'a> {
     msg: &'a str,
@@ -69,9 +57,9 @@ struct ErrorMessage<'a> {
 
 /// Builds and returns the first version of the API.
 pub async fn run_api_v1() {
-    let state = warp::any().map(move || Context {
-        pool: HashMap::new(),
-    });
+    let database_ctx = Arc::new(RwLock::new(HashMap::new()));
+
+    let state = warp::any().map(move || Context(database_ctx.clone()));
     let graphql_filter = juniper_warp::make_graphql_filter(schema(), state.boxed());
 
     let log = warp::log("furink_backend");
