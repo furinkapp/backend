@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use juniper::{EmptyMutation, EmptySubscription, RootNode};
+use juniper::{EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use serde::Serialize;
 use tokio::sync::RwLock;
 use warp::{hyper::StatusCode, Filter};
@@ -19,12 +19,12 @@ impl Query {
         "1.0"
     }
 
-    async fn get_message(context: &Context, name: String) -> Option<String> {
+    async fn get_message(context: &Context, name: String) -> FieldResult<Option<String>> {
         let Context(context) = context;
-        match context.read().await.get(&name) {
+        Ok(match context.read().await.get(&name) {
             Some(message) => Some(message.clone()),
             None => None,
-        }
+        })
     }
 
     async fn set_message(context: &Context, name: String, message: String) -> String {
