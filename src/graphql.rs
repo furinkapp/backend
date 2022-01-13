@@ -1,3 +1,5 @@
+//! Contains the GraphQL schema and query resolvers.
+
 use std::{error::Error, str::FromStr, sync::Arc};
 
 use furink_proto::users::{
@@ -12,8 +14,10 @@ use crate::auth::VerifiedToken;
 
 /// The application persistence layer interface.
 pub struct State {
-    users: UserServiceClient<Channel>,
-    profiles: ProfileServiceClient<Channel>,
+	/// The user service client.
+    pub users: UserServiceClient<Channel>,
+	/// The profile service client.
+    pub profiles: ProfileServiceClient<Channel>,
 }
 
 impl State {

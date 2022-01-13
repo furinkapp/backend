@@ -1,3 +1,4 @@
+//! Defines application-wide errors and error handling.
 use std::convert::Infallible;
 
 use log::debug;

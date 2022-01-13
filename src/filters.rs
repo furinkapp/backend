@@ -1,3 +1,4 @@
+//! Defines custom filters used by the web server.
 use hmac::Hmac;
 use jwt::{Header, Token, Verified, VerifyWithKey};
 use sha2::Sha384;

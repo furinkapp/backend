@@ -1,3 +1,5 @@
+//! Contains logic for handling, validating, and verifying the JWT
+//! tokens used to authenticate users.
 use std::{env, error::Error};
 
 use bitflags::bitflags;
