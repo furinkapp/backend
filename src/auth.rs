@@ -14,6 +14,14 @@ bitflags! {
         const EMAIL = 1 << 0;
         /// This can read the user's profile.
         const PROFILE = 1 << 1;
+        /// This can access the user's post history.
+        const POSTS = 1 << 2;
+        /// This can create a post on the user's behalf.
+        const CREATE_POST = 1 << 3;
+        /// This can update a post on the user's behalf.
+        const UPDATE_POST = 1 << 4;
+        /// This can delete a post on the user's behalf.
+        const DELETE_POST = 1 << 5;
     }
 }
 

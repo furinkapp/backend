@@ -26,10 +26,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .init();
     // Load the environment variables from .env file.
     dotenv().ok();
-    // Create the GraphQL schema.
-    info!("Creating GraphQL context...");
+    // Connect to gRPC data provider.
+    info!("Connecting to gRPC server...");
+    let state = State::new(env::var("GRPC_URL")?).await?;
     // Create the state and context filter.
-    let state = State {};
+    info!("Creating GraphQL context...");
     let state = Arc::new(Mutex::new(state));
     let context = warp::any().and(access_token()).map(move |token| Context {
         state: state.clone(),
